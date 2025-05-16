@@ -1,0 +1,13 @@
+syntax = "proto3";
+option go_package = "github.com/seanbit/nrpc/protos/test";
+package test;
+
+message SomeRequest {
+  int32 A = 1;
+  string B = 2;
+}
+
+message SomeResponse {
+  string code = 1;
+  string resp = 2;
+}
