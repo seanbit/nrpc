@@ -66,6 +66,8 @@ type NRpc interface {
 
 	RPC(ctx context.Context, routeStr string, reply proto.Message, arg proto.Message) error
 	RPCTo(ctx context.Context, serverID, routeStr string, reply proto.Message, arg proto.Message) error
+	Notify(ctx context.Context, routeStr string, arg proto.Message) error
+	NotifyTo(ctx context.Context, serverID, routeStr string, arg proto.Message) error
 
 	Register(c component.Component, options ...component.Option)
 

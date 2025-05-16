@@ -24,3 +24,8 @@ func (s *Service) RequestHandle(ctx context.Context, args *test.SomeRequest) (*t
 		Resp: args.String(),
 	}, nil
 }
+
+func (s *Service) NotifyHandle(ctx context.Context, args *test.SomeRequest) {
+	logger := nrpc.GetDefaultLoggerFromCtx(ctx) // The default logger contains a requestId, the route being executed and the sessionId
+	logger.WithFields(map[string]interface{}{"args": args}).Info("NotifyHandle called")
+}

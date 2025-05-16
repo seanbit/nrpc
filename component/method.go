@@ -66,6 +66,9 @@ func isRemoteMethod(method reflect.Method) bool {
 	}
 
 	// Method needs two outs: interface{}(that implements proto.Message), error
+	if mt.NumOut() == 0 {
+		return true
+	}
 	if mt.NumOut() != 2 {
 		return false
 	}

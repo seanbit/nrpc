@@ -116,6 +116,16 @@ func RPCTo(ctx context.Context, serverID, routeStr string, reply proto.Message, 
 	return DefaultApp.RPCTo(ctx, serverID, routeStr, reply, arg)
 }
 
+// Notify calls a method in a different server
+func Notify(ctx context.Context, routeStr string, arg proto.Message) error {
+	return DefaultApp.Notify(ctx, routeStr, arg)
+}
+
+// NotifyTo send a rpc to a specific server
+func NotifyTo(ctx context.Context, serverID, routeStr string, arg proto.Message) error {
+	return DefaultApp.NotifyTo(ctx, serverID, routeStr, arg)
+}
+
 func Register(c component.Component, options ...component.Option) {
 	DefaultApp.Register(c, options...)
 }

@@ -22,30 +22,42 @@ package nrpc
 
 import (
 	"context"
-	"reflect"
-
+	"github.com/seanbit/nrpc/conn/message"
 	"github.com/seanbit/nrpc/constants"
 	"github.com/seanbit/nrpc/route"
 	"google.golang.org/protobuf/proto"
+	"reflect"
 )
 
 // RPC calls a method in a different server
 func (app *App) RPC(ctx context.Context, routeStr string, reply proto.Message, arg proto.Message) error {
-	return app.doSendRPC(ctx, "", routeStr, reply, arg)
+	return app.doSendRPC(ctx, "", routeStr, message.Request, reply, arg)
 }
 
 // RPCTo send a rpc to a specific server
 func (app *App) RPCTo(ctx context.Context, serverID, routeStr string, reply proto.Message, arg proto.Message) error {
-	return app.doSendRPC(ctx, serverID, routeStr, reply, arg)
+	return app.doSendRPC(ctx, serverID, routeStr, message.Request, reply, arg)
 }
 
-func (app *App) doSendRPC(ctx context.Context, serverID, routeStr string, reply proto.Message, arg proto.Message) error {
+// Notify calls a method in a different server
+func (app *App) Notify(ctx context.Context, routeStr string, arg proto.Message) error {
+	return app.doSendRPC(ctx, "", routeStr, message.Notify, nil, arg)
+}
+
+// NotifyTo send a rpc to a specific server
+func (app *App) NotifyTo(ctx context.Context, serverID, routeStr string, arg proto.Message) error {
+	return app.doSendRPC(ctx, serverID, routeStr, message.Notify, nil, arg)
+}
+
+func (app *App) doSendRPC(ctx context.Context, serverID, routeStr string, mt message.Type, reply proto.Message, arg proto.Message) error {
 	if app.rpcServer == nil {
 		return constants.ErrRPCServerNotInitialized
 	}
 
-	if reply == nil || reflect.TypeOf(reply).Kind() != reflect.Ptr {
-		return constants.ErrReplyShouldBePtr
+	if mt == message.Request {
+		if reply == nil || reflect.TypeOf(reply).Kind() != reflect.Ptr {
+			return constants.ErrReplyShouldBePtr
+		}
 	}
 
 	r, err := route.Decode(routeStr)
@@ -61,5 +73,5 @@ func (app *App) doSendRPC(ctx context.Context, serverID, routeStr string, reply 
 		return constants.ErrNonsenseRPC
 	}
 
-	return app.remoteService.RPC(ctx, serverID, r, reply, arg)
+	return app.remoteService.RPC(ctx, serverID, mt, r, reply, arg)
 }

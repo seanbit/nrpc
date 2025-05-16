@@ -313,6 +313,9 @@ func (ns *NatsRPCServer) processRequest(ctx context.Context, req *protos.Request
 }
 
 func (ns *NatsRPCServer) processResponse(req *protos.Request, resp *protos.Response, err error) {
+	if req.Msg.Type == protos.MsgType_MsgNotify {
+		return
+	}
 	p, err := ns.marshalResponse(resp)
 	err = ns.conn.Publish(req.GetMsg().GetReply(), p)
 	if err != nil {

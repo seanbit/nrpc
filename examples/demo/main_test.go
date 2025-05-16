@@ -21,3 +21,18 @@ func TestClientRpcCall(t *testing.T) {
 	}
 	t.Logf("reply:%v", reply.String())
 }
+
+func TestClientNotifyCall(t *testing.T) {
+	StartServer("test_client", true)
+	defer nrpc.Shutdown()
+	ctx := nrpc.NewShareKeyContext(nil, "uid001")
+	route := "test_server.serv.notifyhandle"
+	args := &test.SomeRequest{
+		A: 2,
+		B: "test notify params",
+	}
+	if err := nrpc.Notify(ctx, route, args); err != nil {
+		t.Fatal(err)
+	}
+	t.Log("notify success")
+}

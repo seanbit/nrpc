@@ -157,9 +157,9 @@ func (r *RemoteService) Call(ctx context.Context, req *protos.Request) (*protos.
 //}
 
 // DoRPC do rpc and get answer
-func (r *RemoteService) DoRPC(ctx context.Context, serverID string, route *route.Route, protoData []byte) (*protos.Response, error) {
+func (r *RemoteService) DoRPC(ctx context.Context, serverID string, mt message.Type, route *route.Route, protoData []byte) (*protos.Response, error) {
 	msg := &message.Message{
-		Type:  message.Request,
+		Type:  mt,
 		Route: route.Short(),
 		Data:  protoData,
 	}
@@ -177,7 +177,7 @@ func (r *RemoteService) DoRPC(ctx context.Context, serverID string, route *route
 }
 
 // RPC makes rpcs
-func (r *RemoteService) RPC(ctx context.Context, serverID string, route *route.Route, reply proto.Message, arg proto.Message) error {
+func (r *RemoteService) RPC(ctx context.Context, serverID string, mt message.Type, route *route.Route, reply proto.Message, arg proto.Message) error {
 	var data []byte
 	var err error
 	if arg != nil {
@@ -186,7 +186,7 @@ func (r *RemoteService) RPC(ctx context.Context, serverID string, route *route.R
 			return err
 		}
 	}
-	res, err := r.DoRPC(ctx, serverID, route, data)
+	res, err := r.DoRPC(ctx, serverID, mt, route, data)
 	if err != nil {
 		return err
 	}
