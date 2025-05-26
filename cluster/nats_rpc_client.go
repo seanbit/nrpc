@@ -135,27 +135,40 @@ func (ns *NatsRPCClient) Call(
 		return nil, err
 	}
 
+	// propagate context
+	propagate := pcontext.ToMap(ctx)
+	propagate[constants.RouteKey] = route.String()
+
+	// check&set request id
 	requestID := pcontext.GetFromPropagateCtx(ctx, constants.RequestIDKey)
 	if requestID == nil {
 		requestID = nuid.Next()
-		ctx = pcontext.AddToPropagateCtx(ctx, constants.RequestIDKey, requestID)
+		propagate[constants.RequestIDKey] = requestID
 	} else if rID, ok := requestID.(string); ok {
 		if rID == "" {
 			requestID = nuid.Next()
+			propagate[constants.RequestIDKey] = requestID
 		}
 	}
 
+	// check&set request timeout
 	reqTimeout := pcontext.GetFromPropagateCtx(ctx, constants.RequestTimeout)
 	if reqTimeout == nil {
 		reqTimeout = ns.reqTimeout.String()
-		ctx = pcontext.AddToPropagateCtx(ctx, constants.RequestTimeout, reqTimeout)
+		propagate[constants.RequestTimeout] = reqTimeout
 	}
 	logger.Log.Debugf("[rpc_client] sending remote nats request for route %s with timeout of %s", route, reqTimeout)
 
-	startTime := time.Now()
-	ctx = pcontext.AddToPropagateCtx(ctx, constants.StartTimeKey, strconv.FormatInt(startTime.UnixNano(), 10))
-	ctx = pcontext.AddToPropagateCtx(ctx, constants.RouteKey, route.String())
+	// check&set request start time
+	startTimeVal := pcontext.GetFromPropagateCtx(ctx, constants.StartTimeKey)
+	if startTimeVal == nil {
+		propagate[constants.StartTimeKey] = strconv.FormatInt(time.Now().UnixNano(), 10)
+	}
 
+	// rebuild context
+	ctx = context.WithValue(ctx, constants.PropagateCtxKey, propagate)
+
+	// build request
 	req, err := buildRequest(ctx, route, msg, ns.server)
 	if err != nil {
 		return nil, err
